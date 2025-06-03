@@ -13,10 +13,7 @@ from lcb_runner.lm_styles import LMStyle
 
 class GeminiRunner(BaseRunner):
     client = genai.Client(
-        # api_key=os.getenv("GOOGLE_API_KEY"), http_options={"api_version": "v1alpha"}
-        vertexai=True,
-        project=os.getenv("GOOGLE_PROJECT_ID"),
-        location=os.getenv("GOOGLE_LOCATION"),
+        api_key=os.getenv("GOOGLE_API_KEY"), http_options={"api_version": "v1alpha"}
     )
     safety_settings = [
         {

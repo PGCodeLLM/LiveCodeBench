@@ -63,6 +63,12 @@ def get_args():
         "--max_tokens", type=int, default=2000, help="Max tokens for sampling"
     )
     parser.add_argument(
+        "--system_prompt",
+        type=str,
+        default=None,
+        help="Optional system prompt prepended to every request",
+    )
+    parser.add_argument(
         "--multiprocess",
         default=0,
         type=int,

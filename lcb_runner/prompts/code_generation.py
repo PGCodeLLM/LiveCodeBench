@@ -26,10 +26,6 @@ class PromptConstants:
     SYSTEM_MESSAGE_QWEN_QWQ = f"<|im_start|>system\nYou are a helpful and harmless assistant. You are Qwen developed by Alibaba. You should think step-by-step.<|im_end|>\n<|im_start|>user"
 
     SYSTEM_MESSAGE_DEEPSEEK_R1 = (
-        "<｜begin▁of▁sentence｜>A conversation between User and Assistant. "
-        "The user asks a question, and the Assistant solves it. "
-        "The assistant first thinks about the reasoning process in the mind and then provides the user with the answer. "
-        "The reasoning process and answer are enclosed within <think> </think> and <answer> </answer> tags, respectively, i.e., <think> reasoning process here </think> <answer> answer here </answer>.<｜User｜>"
     )
 
     FORMATTING_MESSAGE_WITH_STARTER_CODE = "You will use the following starter code to write the solution to the problem and enclose your code within delimiters."

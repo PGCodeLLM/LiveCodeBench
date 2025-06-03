@@ -14,6 +14,7 @@ class BaseRunner(ABC):
     def __init__(self, args, model: LanguageModel):
         self.args = args
         self.model = model
+        self.system_prompt = args.system_prompt
         self.client_kwargs: dict[str | str] = {}
 
         if self.args.use_cache:

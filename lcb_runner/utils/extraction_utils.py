@@ -10,11 +10,31 @@ def extract_code(model_output: str, lmstyle: LMStyle):
     elif lmstyle == LMStyle.GenericBase:
         return model_output.strip()
     else:
-        indexlines = [i for i, line in enumerate(outputlines) if "```" in line]
-        if len(indexlines) < 2:
+        try:
+            sol_idx = next(i for i, line in enumerate(outputlines)
+                       if "solution code" in line.lower())
+        except StopIteration:
             return ""
-        # return "\n".join(outputlines[indexlines[0] + 1 : indexlines[1]])
-        return "\n".join(outputlines[indexlines[-2] + 1 : indexlines[-1]])
+
+        # find the first and second ``` after that
+        start_mark = end_mark = None
+        for i in range(sol_idx + 1, len(outputlines)):
+            if "```" in outputlines[i]:
+                if start_mark is None:
+                    start_mark = i
+                else:
+                    end_mark = i
+                    break
+
+        if start_mark is None or end_mark is None or end_mark <= start_mark:
+            return ""
+
+        # grab the code block, cleaning optional “python” header
+        code_lines = outputlines[start_mark + 1 : end_mark]
+        if code_lines and code_lines[0].strip().lower() == "python":
+            code_lines = code_lines[1:]
+
+        return "\n".join(code_lines)
 
 
 def extract_test_output_code(model_output: str, lmstyle: LMStyle = None):
