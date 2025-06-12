@@ -14,26 +14,34 @@ def extract_code(model_output: str, lmstyle: LMStyle):
             sol_idx = next(i for i, line in enumerate(outputlines)
                        if "solution code" in line.lower())
         except StopIteration:
-            return ""
-
-        # find the first and second ``` after that
-        start_mark = end_mark = None
-        for i in range(sol_idx + 1, len(outputlines)):
-            if "```" in outputlines[i]:
-                if start_mark is None:
-                    start_mark = i
-                else:
-                    end_mark = i
-                    break
-
-        if start_mark is None or end_mark is None or end_mark <= start_mark:
-            return ""
-
-        # grab the code block, cleaning optional “python” header
+            sol_idx = None
+        # graceful fallback if the marker is missing 
+        if sol_idx is None:
+            # just grab the first fenced block in the whole output
+            fences = [i for i, l in enumerate(outputlines) if "```" in l]
+            if len(fences) >= 2:
+                start_mark, end_mark = fences[0], fences[1]
+            else:
+                return ""
+        else:
+            # find the first and second ``` after the marker 
+            start_mark = end_mark = None
+            for i in range(sol_idx + 1, len(outputlines)):
+                if "```" in outputlines[i]:
+                    if start_mark is None:
+                        start_mark = i
+                    else:
+                        end_mark = i
+                        break
+            if start_mark is None or end_mark is None or end_mark <= start_mark:
+                return ""
+        # extract & clean the block 
         code_lines = outputlines[start_mark + 1 : end_mark]
         if code_lines and code_lines[0].strip().lower() == "python":
             code_lines = code_lines[1:]
-
+        # Drop any stray </answer> that some finetunes append
+        if code_lines and code_lines[-1].strip().lower().startswith("</answer"):
+            code_lines = code_lines[:-1]
         return "\n".join(code_lines)
 
 

@@ -31,7 +31,7 @@ class LMStyle(Enum):
     QwQ = "QwQ"
     LLaMa3 = "LLaMa3"
     DeepSeekR1 = "DeepSeekR1"
-
+    SeedCoder = "SeedCoder"
     TogetherAI = "TogetherAI"
 
 
@@ -707,6 +707,18 @@ LanguageModelList: list[LanguageModel] = [
         datetime(2025, 1, 20),
         link="https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Llama-70B",
     ),
+    
+    # ByteDance SeedCoder models:
+    LanguageModel(
+        "ByteDance-Seed/Seed-Coder-8B-Reasoning",
+        "Seed-Coder-8B-Reasoning",
+        LMStyle.SeedCoder,
+        datetime(2025, 5, 10),
+        link="https://huggingface.co/ByteDance-Seed/Seed-Coder-8B-Reasoning",
+    ),
+    ## Will add the other modes here on the demand
+    
+    
     LanguageModel(
         model_name="command-r-plus-08-2024",
         model_repr="command-r-plus-08-2024",

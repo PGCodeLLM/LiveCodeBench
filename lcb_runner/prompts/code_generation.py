@@ -335,6 +335,32 @@ def format_prompt_generation(
         prompt = get_base_model_question_template_answer(question)
         return prompt
 
+    # SeedCoder model family
+    # Base: plain LM: no chat template, I'll use the GenericBase path
+    # Instruct / “Reasoning: have a chat_template identical to
+    # other instruct models, so we build proper chat messages here
+    #
+        # ─── Seed-Coder-8B (Instruct / Reasoning / Base) ─────────────
+    if LanguageModelStyle == LMStyle.SeedCoder:
+        from transformers import AutoTokenizer
+        tok = AutoTokenizer.from_pretrained(
+            "ByteDance-Seed/Seed-Coder-8B-Reasoning",
+            trust_remote_code=True, use_fast=False,
+        )
+        has_template = bool(getattr(tok, "chat_template", None))
+
+        if not has_template:                      # Base variant
+            return get_base_model_question_template_answer(question)
+
+        # Instruct / Reasoning variant  (no system role!)
+        chat_messages = [
+            {
+                "role": "user",
+                "content": get_generic_question_template_answer(question)
+            }
+        ]
+        return chat_messages
+    
     raise NotImplementedError(
         f"LanguageModelStyle {LanguageModelStyle} not implemented"
     )

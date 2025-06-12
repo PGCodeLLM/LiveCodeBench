@@ -47,17 +47,27 @@ class VLLMRunner(BaseRunner):
         self.system_prompt = getattr(args, "system_prompt", "You are a helpful coding assistant.")
 
     def _build_chat_prompt(self, user_content: str) -> str:
-        messages = [
-            {"role": "system",    "content": SYSTEM_MSG},
-            {"role": "user",      "content": user_content},
-            {"role": "assistant", "content": "\n<answer>\n```python\n"},
-        ]
+        # messages = [
+        #     {"role": "system",    "content": SYSTEM_MSG},
+        #     {"role": "user",      "content": user_content},
+        #     {"role": "assistant", "content": "\n<answer>\n```python\n"},
+        # ]
 
 
+        # return self.tokenizer.apply_chat_template(
+        #     messages,
+        #     tokenize=False,
+        #     add_generation_prompt=False,   # last assistant turn already present
+        # )
+        
+        if isinstance(user_content, str):
+            return f"{user_content}"
+
+        # list[dict] → chat models (Seed-Coder Instruct / Reasoning, Llama-3-Ins…)
         return self.tokenizer.apply_chat_template(
-            messages,
+            user_content,
             tokenize=False,
-            add_generation_prompt=False,   # last assistant turn already present
+            add_generation_prompt=True,   # inserts first <assistant>
         )
 
     def _run_single(self, prompt: str) -> list[str]:
@@ -78,11 +88,26 @@ class VLLMRunner(BaseRunner):
 
         if todo:
             print(f"Running {len(todo)} prompts in batch...Sneak peek:\n {todo[0]}")
+            print("--------------------------------------------------------------")
             results = self.llm.generate(todo, self.sampling_params)
             for i, p, res in zip(todo_idx, todo, results):
                 texts = [o.text for o in res.outputs]
+                cleaned = []
+                for t in texts:
+                    # -- keep only the first fenced block, drop a leading
+                    #     “<assistant>” (and sentinel tokens) if it sneaks in
+                    body = t.split("<answer>")[-1]              # after <answer>
+                    body = body.split("</answer>", 1)[0]        # before closing
+                    if body.startswith("```python"):
+                        code = body[len("```python"):].lstrip()
+                        if code.startswith("<assistant>"):
+                            code = code[len("<assistant>"):]
+                        code = code.lstrip()  
+                        body = "```python\n" + code
+                    cleaned.append(body.rstrip() + "\n```\n</answer>")
+    
                 if self.args.use_cache:
-                    self.cache[p] = texts
-                outputs[i] = [t.rstrip() + "\n```\n</answer>" for t in texts]
+                    self.cache[p] = cleaned
+                outputs[i] = cleaned
 
         return outputs
